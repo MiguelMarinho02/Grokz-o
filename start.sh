@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# check python packages
+while read -r package; do
+    pip show "$package" > /dev/null || pip install "$package"
+done < requirements.txt
+
 source venv/bin/activate && \
 python3 hotreload.py && \
 deactivate
