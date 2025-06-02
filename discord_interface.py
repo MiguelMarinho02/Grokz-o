@@ -13,7 +13,7 @@ class DiscordClient(commands.Bot):
         intents.message_content = True
         intents.members = True
         super().__init__(intents=intents, command_prefix="!")
-    
+
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
@@ -47,5 +47,5 @@ class DiscordClient(commands.Bot):
                 )
             print(question)
             response = self.bot.complete_text(question)
-            await message.channel.send(content=response[0:1999])
+            await message.channel.send(content=response[0:1999], reference=message)
         return
