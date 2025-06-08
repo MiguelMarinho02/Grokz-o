@@ -2,7 +2,9 @@
 
 # check python packages
 while read -r package; do
-    pip show "$package" > /dev/null || pip install "$package"
+    source venv/bin/activate && \
+    pip show "$package" > /dev/null || pip install "$package" && \
+    deactivate
 done < requirements.txt
 
 source venv/bin/activate && \
