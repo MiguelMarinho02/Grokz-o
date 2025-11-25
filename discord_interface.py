@@ -31,8 +31,11 @@ async def play(ctx : commands.Context):
         return
 
     channel = ctx.author.voice.channel
+    vc = None
     if ctx.voice_client is None:
         vc = await channel.connect()
+    else:
+        vc = ctx.voice_client
 
     if vc.is_playing():
         ctx.voice_client.stop()
