@@ -11,7 +11,7 @@ class RestartOnChange(FileSystemEventHandler):
 
     def start_bot(self):
         print("[dev] Starting bot...")
-        self.process = subprocess.Popen(["python", "main.py"])
+        self.process = subprocess.Popen(["python", "discord_interface.py"])
 
     def stop_bot(self):
         if self.process:

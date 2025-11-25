@@ -1,8 +1,43 @@
 import discord
-import os
+import os, shutil
 from bot_interface import GeminiBot
 from discord.ext import commands
 from dotenv import load_dotenv
+
+def delete_contents_from_folder(folder):
+    for filename in os.listdir(folder):
+        file_path = os.path.join(folder, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+@commands.command()
+async def play(ctx : commands.Context):
+    if not ctx.message.attachments:
+        await ctx.send("Upload an audio file with this command.")
+        return
+
+    message : discord.Message = ctx.message
+    attachment = message.attachments[0]
+    file_path = f"./downloads/{attachment.filename}"
+    await attachment.save(file_path)
+
+    if ctx.author.voice is None:
+        await ctx.send("Join a voice channel first!")
+        return
+
+    channel = ctx.author.voice.channel
+    vc = await channel.connect()
+
+    if vc.is_playing():
+        ctx.voice_client.stop()
+
+    vc.play(discord.FFmpegPCMAudio(file_path), after=lambda e: delete_contents_from_folder("./downloads/"))
+    await ctx.send(f"Now playing: {attachment.filename}")
 
 class DiscordClient(commands.Bot):
     def __init__(self):
@@ -13,6 +48,8 @@ class DiscordClient(commands.Bot):
         intents.message_content = True
         intents.members = True
         super().__init__(intents=intents, command_prefix="!")
+
+        self.add_command(play)
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
@@ -48,4 +85,10 @@ class DiscordClient(commands.Bot):
             print(question)
             response = self.bot.complete_text(question)
             await message.channel.send(content=response[0:1999], reference=message)
+        await self.process_commands(message)
         return
+
+
+if __name__ == "__main__":
+    discord_bot = DiscordClient()
+    discord_bot.run(discord_bot.token)
